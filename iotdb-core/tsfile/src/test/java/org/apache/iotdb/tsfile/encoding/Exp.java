@@ -47,12 +47,12 @@ public class Exp {
 //            "AUDIO.csv",
 //            "ECG.csv",
 //            "GAS.csv",
-            "GPS.csv",
+//            "GPS.csv",
 //            "HHAR.csv",
 //            "NOISE.csv",
-            "POWER.csv",
-            "TEMP.csv",
-//            "power_5241600.csv",
+//            "POWER.csv",
+//            "TEMP.csv",
+            "power_5241600.csv",
 //            "voltage_22825440.csv",
 //            "ghi_10617120.csv"
     };
@@ -61,13 +61,13 @@ public class Exp {
     private static final TSEncoding[] encodingList = {
 //            TSEncoding.PLAIN,
             TSEncoding.STD,
-            TSEncoding.TS_2DIFF,
-            TSEncoding.RLE,
-            TSEncoding.SPRINTZ,
-            TSEncoding.GORILLA,
-            TSEncoding.RLBE,
-            TSEncoding.CHIMP,
-            TSEncoding.ZIGZAG,
+//            TSEncoding.TS_2DIFF,
+//            TSEncoding.RLE,
+//            TSEncoding.SPRINTZ,
+//            TSEncoding.GORILLA,
+//            TSEncoding.RLBE,
+//            TSEncoding.CHIMP,
+//            TSEncoding.ZIGZAG,
 
 //            TSEncoding.BUFF,
 //            TSEncoding.ZIGZAG,
@@ -89,9 +89,9 @@ public class Exp {
     // select compression algorithms
     private static final CompressionType[] compressionList = {
 //            CompressionType.UNCOMPRESSED,
-            CompressionType.LZ4,
+//            CompressionType.LZ4,
 //            CompressionType.GZIP,
-            CompressionType.SNAPPY,
+//            CompressionType.SNAPPY,
 //            CompressionType.ZSTD,
 //            CompressionType.LZMA2,
     };
@@ -102,7 +102,7 @@ public class Exp {
 //            "GZIP",
             "SNAPPY",
 //            "ZSTD",
-            "LZMA2",
+//            "LZMA2",
     };
 
     private static void store() throws Exception {
@@ -161,7 +161,7 @@ public class Exp {
                 encodingMethod = encodingList[idx];
                 compressionMethod = CompressionType.UNCOMPRESSED;
                 store();
-                query();
+//                query();
                 // calculate compression ratio
                 ratio = (double) compressed.length / (double) (original.length * Double.BYTES);
                 System.out.println(encodingNameList[idx] + "\t" + ratio + "\t" + encode_time / 1e6 + "\t" + decode_time / 1e6);
@@ -172,7 +172,7 @@ public class Exp {
                 encodingMethod = TSEncoding.PLAIN;
                 compressionMethod = compressionList[idx];
                 store();
-                query();
+//                query();
                 // calculate compression ratio
                 ratio = (double) compressed.length / (double) (original.length * Double.BYTES);
                 System.out.println(compressionNameList[idx] + "\t" + ratio + "\t" + encode_time / 1e6 + "\t" + decode_time / 1e6);

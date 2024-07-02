@@ -177,8 +177,9 @@ public abstract class Decoder {
             case STD:
                 switch (dataType) {
                     case INT32:
-                        return new STDDecoder.IntSTDDecoder();
+                        return new STD2Decoder.IntSTDDecoder();
                     case INT64:
+//                        return new STD2Decoder.LongSTDDecoder();
                         return new STDDecoder.LongSTDDecoder();
                     default:
                         throw new TsFileDecodingException(String.format(ERROR_MSG, encoding, dataType));

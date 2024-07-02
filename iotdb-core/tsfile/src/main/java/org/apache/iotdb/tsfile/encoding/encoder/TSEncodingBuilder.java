@@ -466,9 +466,11 @@ public abstract class TSEncodingBuilder {
         public Encoder getEncoder(TSDataType type) {
             switch (type) {
                 case INT32:
-                    return new STDEncoder.IntSTDEncoder();
+                    return new STD2Encoder.IntSTDEncoder();
                 case INT64:
-                    return new STDEncoder.LongSTDEncoder();
+//                    return new STDEncoder.LongSTDEncoder();
+//                    return new STD2Encoder.LongSTDEncoder();
+                    return new STD3Encoder.LongSTDEncoder();
                 default:
                     throw new UnSupportedDataTypeException("STD doesn't support data type: " + type);
             }
