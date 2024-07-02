@@ -20,8 +20,8 @@ import static org.apache.iotdb.tsfile.encoding.Utils.getPeriod;
 import static org.apache.iotdb.tsfile.encoding.Utils.checkCorrectness;
 
 public class Exp {
-    private static final String INPUT_DIR = "/Users/chenzijie/Documents/GitHub/data/input/compression/";
-    private static final String OUTPUT_DIR = "/Users/chenzijie/Documents/GitHub/data/output/compression/";
+    private static final String INPUT_DIR = "F:/data/";
+    private static final String OUTPUT_DIR = "F:/data/";
 
     // need to provide
     private static double[] original;
@@ -113,9 +113,8 @@ public class Exp {
         for (double value : original) {
             encoder.encode((long) (value * Math.pow(10, scale)), buffer);
         }
-        encode_time = System.nanoTime() - start;
-
         encoder.flush(buffer);
+        encode_time = System.nanoTime() - start;
 
         encoded = buffer.toByteArray();
         ICompressor compressor = ICompressor.getCompressor(compressionMethod);
@@ -128,9 +127,10 @@ public class Exp {
         decoded = new double[original.length];
         int decoded_idx = 0;
 
-        long start = System.nanoTime();
         uncompressed = compressed.clone();
         uncompressed = unCompressor.uncompress(uncompressed);
+
+        long start = System.nanoTime();
         ByteBuffer ebuffer = ByteBuffer.wrap(uncompressed);
         Decoder decoder = Decoder.getDecoderByType(encodingMethod, TSDataType.INT64);
         while (decoder.hasNext(ebuffer)) {
@@ -167,16 +167,16 @@ public class Exp {
                 System.out.println(encodingNameList[idx] + "\t" + ratio + "\t" + encode_time / 1e6 + "\t" + decode_time / 1e6);
             }
 
-            for (int idx = 0; idx < compressionList.length; idx++) {
-                // choose
-                encodingMethod = TSEncoding.PLAIN;
-                compressionMethod = compressionList[idx];
-                store();
-                query();
-                // calculate compression ratio
-                ratio = (double) compressed.length / (double) (original.length * Double.BYTES);
-                System.out.println(compressionNameList[idx] + "\t" + ratio + "\t" + encode_time / 1e6 + "\t" + decode_time / 1e6);
-            }
+//            for (int idx = 0; idx < compressionList.length; idx++) {
+//                // choose
+//                encodingMethod = TSEncoding.PLAIN;
+//                compressionMethod = compressionList[idx];
+//                store();
+//                query();
+//                // calculate compression ratio
+//                ratio = (double) compressed.length / (double) (original.length * Double.BYTES);
+//                System.out.println(compressionNameList[idx] + "\t" + ratio + "\t" + encode_time / 1e6 + "\t" + decode_time / 1e6);
+//            }
         }
     }
 

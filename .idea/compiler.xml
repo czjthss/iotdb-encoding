@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+    <component name="CompilerConfiguration">
+        <annotationProcessing>
+            <profile name="Maven default annotation processors profile" enabled="true">
+                <sourceOutputDir name="target/generated-sources/annotations"/>
+                <sourceTestOutputDir name="target/generated-test-sources/test-annotations"/>
+                <outputRelativeToContentRoot value="true"/>
+            </profile>
+        </annotationProcessing>
+        <bytecodeTargetLevel>
+            <module name="client-example" target="1.8"/>
+            <module name="customize-mqtt-example" target="1.8"/>
+            <module name="dropwizard-metrics" target="1.8"/>
+            <module name="external-api" target="1.8"/>
+            <module name="flink-example" target="1.8"/>
+            <module name="flink-iotdb-connector" target="1.8"/>
+            <module name="flink-sql-iotdb-connector" target="1.8"/>
+            <module name="flink-tsfile-connector" target="1.8"/>
+            <module name="hadoop-example" target="1.8"/>
+            <module name="hadoop-tsfile" target="1.8"/>
+            <module name="hive-connector" target="1.8"/>
+            <module name="iotdb-antlr" target="1.8"/>
+            <module name="iotdb-api" target="1.8"/>
+            <module name="iotdb-cli" target="1.8"/>
+            <module name="iotdb-client" target="1.8"/>
+            <module name="iotdb-confignode" target="1.8"/>
+            <module name="iotdb-connector" target="1.8"/>
+            <module name="iotdb-consensus" target="1.8"/>
+            <module name="iotdb-core" target="1.8"/>
+            <module name="iotdb-distribution" target="1.8"/>
+            <module name="iotdb-examples" target="1.8"/>
+            <module name="iotdb-grafana-connector" target="1.8"/>
+            <module name="iotdb-jdbc" target="1.8"/>
+            <module name="iotdb-metrics" target="1.8"/>
+            <module name="iotdb-mlnode" target="1.8"/>
+            <module name="iotdb-protocol" target="1.8"/>
+            <module name="iotdb-python-api" target="1.8"/>
+            <module name="iotdb-server" target="1.8"/>
+            <module name="iotdb-session" target="1.8"/>
+            <module name="iotdb-thrift" target="1.8"/>
+            <module name="iotdb-thrift-commons" target="1.8"/>
+            <module name="iotdb-thrift-confignode" target="1.8"/>
+            <module name="iotdb-thrift-consensus" target="1.8"/>
+            <module name="iotdb-thrift-mlnode" target="1.8"/>
+            <module name="isession" target="1.8"/>
+            <module name="jdbc-example" target="1.8"/>
+            <module name="kafka-example" target="1.8"/>
+            <module name="library-udf" target="1.8"/>
+            <module name="metrics-interface" target="1.8"/>
+            <module name="micrometer-metrics" target="1.8"/>
+            <module name="mqtt-example" target="1.8"/>
+            <module name="node-commons" target="1.8"/>
+            <module name="openapi" target="1.8"/>
+            <module name="pipe-api" target="1.8"/>
+            <module name="pulsar-example" target="1.8"/>
+            <module name="rabbitmq-example" target="1.8"/>
+            <module name="rest-java-example" target="1.8"/>
+            <module name="rocketmq-example" target="1.8"/>
+            <module name="service-rpc" target="1.8"/>
+            <module name="spark-iotdb-connector" target="11"/>
+            <module name="spark-iotdb-connector_2.11" target="1.8"/>
+            <module name="spark-iotdb-connector_2.12" target="1.8"/>
+            <module name="spark-tsfile" target="1.8"/>
+            <module name="trigger-api" target="1.8"/>
+            <module name="trigger-example" target="1.8"/>
+            <module name="tsfile" target="1.8"/>
+            <module name="tsfile-example" target="1.8"/>
+            <module name="udf-api" target="1.8"/>
+            <module name="udf-example" target="1.8"/>
+            <module name="zeppelin-iotdb" target="1.8"/>
+        </bytecodeTargetLevel>
+    </component>
+</project>
