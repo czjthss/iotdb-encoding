@@ -82,6 +82,10 @@ public abstract class TSEncodingBuilder {
                 return new BUFF();
             case STD:
                 return new STD();
+            case STD2:
+                return new STD2();
+            case STD3:
+                return new STD3();
             default:
                 throw new UnsupportedOperationException(type.toString());
         }
@@ -466,10 +470,106 @@ public abstract class TSEncodingBuilder {
         public Encoder getEncoder(TSDataType type) {
             switch (type) {
                 case INT32:
+                    return new STDEncoder.IntSTDEncoder();
+                case INT64:
+                    return new STDEncoder.LongSTDEncoder();
+                default:
+                    throw new UnSupportedDataTypeException("STD doesn't support data type: " + type);
+            }
+        }
+
+        @Override
+        /**
+         * TS_2DIFF could specify <b>max_point_number</b> in given JSON Object, which means the maximum
+         * decimal digits for float or double data.
+         */
+        public void initFromProps(Map<String, String> props) {
+            // set max error from initialized map or default value if not set
+            if (props == null || !props.containsKey(Encoder.MAX_POINT_NUMBER)) {
+                maxPointNumber = TSFileDescriptor.getInstance().getConfig().getFloatPrecision();
+            } else {
+                try {
+                    this.maxPointNumber = Integer.parseInt(props.get(Encoder.MAX_POINT_NUMBER));
+                } catch (NumberFormatException e) {
+                    logger.warn(
+                            "The format of max point number {} is not correct."
+                                    + " Using default float precision.",
+                            props.get(Encoder.MAX_POINT_NUMBER));
+                }
+                if (maxPointNumber < 0) {
+                    maxPointNumber = TSFileDescriptor.getInstance().getConfig().getFloatPrecision();
+                    logger.warn(
+                            "cannot set max point number to negative value, replaced with default value:{}",
+                            maxPointNumber);
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return JsonFormatConstant.MAX_POINT_NUMBER + ":" + maxPointNumber;
+        }
+    }
+
+    public static class STD2 extends TSEncodingBuilder {
+
+        private int maxPointNumber = 0;
+
+        @Override
+        public Encoder getEncoder(TSDataType type) {
+            switch (type) {
+                case INT32:
                     return new STD2Encoder.IntSTDEncoder();
                 case INT64:
-//                    return new STDEncoder.LongSTDEncoder();
-//                    return new STD2Encoder.LongSTDEncoder();
+                    return new STD2Encoder.LongSTDEncoder();
+                default:
+                    throw new UnSupportedDataTypeException("STD doesn't support data type: " + type);
+            }
+        }
+
+        @Override
+        /**
+         * TS_2DIFF could specify <b>max_point_number</b> in given JSON Object, which means the maximum
+         * decimal digits for float or double data.
+         */
+        public void initFromProps(Map<String, String> props) {
+            // set max error from initialized map or default value if not set
+            if (props == null || !props.containsKey(Encoder.MAX_POINT_NUMBER)) {
+                maxPointNumber = TSFileDescriptor.getInstance().getConfig().getFloatPrecision();
+            } else {
+                try {
+                    this.maxPointNumber = Integer.parseInt(props.get(Encoder.MAX_POINT_NUMBER));
+                } catch (NumberFormatException e) {
+                    logger.warn(
+                            "The format of max point number {} is not correct."
+                                    + " Using default float precision.",
+                            props.get(Encoder.MAX_POINT_NUMBER));
+                }
+                if (maxPointNumber < 0) {
+                    maxPointNumber = TSFileDescriptor.getInstance().getConfig().getFloatPrecision();
+                    logger.warn(
+                            "cannot set max point number to negative value, replaced with default value:{}",
+                            maxPointNumber);
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return JsonFormatConstant.MAX_POINT_NUMBER + ":" + maxPointNumber;
+        }
+    }
+
+    public static class STD3 extends TSEncodingBuilder {
+
+        private int maxPointNumber = 0;
+
+        @Override
+        public Encoder getEncoder(TSDataType type) {
+            switch (type) {
+                case INT32:
+                    return new STD3Encoder.IntSTDEncoder();
+                case INT64:
                     return new STD3Encoder.LongSTDEncoder();
                 default:
                     throw new UnSupportedDataTypeException("STD doesn't support data type: " + type);
@@ -509,3 +609,4 @@ public abstract class TSEncodingBuilder {
         }
     }
 }
+

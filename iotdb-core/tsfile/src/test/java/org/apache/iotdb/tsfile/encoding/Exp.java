@@ -61,6 +61,8 @@ public class Exp {
     private static final TSEncoding[] encodingList = {
 //            TSEncoding.PLAIN,
             TSEncoding.STD,
+            TSEncoding.STD2,
+            TSEncoding.STD3,
             TSEncoding.TS_2DIFF,
             TSEncoding.RLE,
             TSEncoding.SPRINTZ,
@@ -77,6 +79,8 @@ public class Exp {
     private static final String[] encodingNameList = {
 //            "PLAIN",
             "STD",
+            "STD2",
+            "STD3",
             "TS_2DIFF",
             "RLE",
             "SPRINTZ",
@@ -135,6 +139,11 @@ public class Exp {
         Decoder decoder = Decoder.getDecoderByType(encodingMethod, TSDataType.INT64);
         while (decoder.hasNext(ebuffer)) {
             decoded[decoded_idx++] = decoder.readLong(ebuffer) / Math.pow(10, scale);
+//            if (((long) (original[decoded_idx - 1] * Math.pow(10, scale)) )/ Math.pow(10, scale) != decoded[decoded_idx - 1]) {
+//                System.out.println("Decoded value is not equal to the original value!");
+//                System.out.println("Original: " + original[decoded_idx - 1]);
+//                System.out.println("Decoded: " + decoded[decoded_idx - 1]);
+//            }
         }
         decode_time = System.nanoTime() - start;
     }

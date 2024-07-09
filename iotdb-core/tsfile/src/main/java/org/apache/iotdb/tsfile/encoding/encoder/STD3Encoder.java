@@ -173,17 +173,6 @@ public abstract class STD3Encoder extends Encoder {
         long t3 = System.nanoTime();
 
         this.out = out;
-//        // calculate width
-//        calculateBitWidthsForSTDBlockBuffer();
-//        calculateBitWidthsForSeasonalBlockBuffer();
-//        // store
-//        writeHeaderToBytes();
-//        writeSeasonalWithMinWidth();
-//        // anomaly
-//        writeAnomalyWithMinWidth();
-//        writeAnomalyIndexWithMinWidth();
-//        // data
-//        writeDataWithMinWidth();
 
         bitVarIntEncoding();
 
@@ -197,8 +186,8 @@ public abstract class STD3Encoder extends Encoder {
         ReadWriteIOUtils.write(writeIndex, this.out);
         ReadWriteIOUtils.write(encodingSeasonalWidthsLength, this.out);
         ReadWriteIOUtils.write(encodingBlockWidthsLength, this.out);
-        ReadWriteIOUtils.write(encodingSeasonalBlockBufferLength / 8 + 1, this.out);
-        ReadWriteIOUtils.write(encodingBlockBufferLength / 8 + 1, this.out);
+        ReadWriteIOUtils.write(encodingSeasonalBlockBufferLength, this.out);
+        ReadWriteIOUtils.write(encodingBlockBufferLength, this.out);
         writeFirstValue();
 
         long t6 = System.nanoTime();
@@ -207,8 +196,8 @@ public abstract class STD3Encoder extends Encoder {
 
         this.out.write(encodingSeasonalWidths, 0, encodingSeasonalWidthsLength);
         this.out.write(encodingBlockWidths, 0, encodingBlockWidthsLength);
-        this.out.write(encodingSeasonalBlockBuffer, 0, encodingSeasonalBlockBufferLength / 8 + 1);
-        this.out.write(encodingBlockBuffer, 0, encodingBlockBufferLength / 8 + 1);
+        this.out.write(encodingSeasonalBlockBuffer, 0, (encodingSeasonalBlockBufferLength + 7) / 8);
+        this.out.write(encodingBlockBuffer, 0, (encodingBlockBufferLength + 7) / 8);
 
         long t7 = System.nanoTime();
 
@@ -487,69 +476,46 @@ public abstract class STD3Encoder extends Encoder {
 //            return Arrays.copyOfRange(buf, 0, pos);
 //        }
 
-        public static byte[] longToBytes(long value) {
-            byte[] bytes = new byte[8];
-            for (int i = 7; i >= 0; i--) {
-                bytes[i] = (byte) (value & 0xFF);
-                value >>= 8;
+        protected byte[] writeUnsignedVarLongWithOffsetToBytes(long value, int offset) {
+            long valueWithOffset = value << offset;
+
+            byte[] buf = new byte[10];
+            int pos = 0;
+            while ((valueWithOffset & 0xFFFFFF00L) != 0L) {
+                buf[pos++] = (byte) (valueWithOffset & 0xFF);
+                valueWithOffset >>>= 8;
             }
-            return bytes;
+            buf[pos++] = (byte) (valueWithOffset & 0xFF);
+            return Arrays.copyOfRange(buf, 0, pos);
         }
 
-        public void bitwiseCopy(byte[] src, int srcPos, byte[] dst, int dstPos, int numBits) {
+        public void bitwiseCopy(byte[] src, byte[] dst, int dstPos) {
             if (src == null || dst == null) {
                 throw new IllegalArgumentException("Source and destination arrays cannot be null");
             }
 
-            if (srcPos < 0 || dstPos < 0 || numBits < 0) {
-                throw new IllegalArgumentException("Positions and number of bits must be non-negative");
-            }
-
-            if (src.length * 8 < srcPos + numBits || dst.length * 8 < dstPos + numBits) {
-                throw new IllegalArgumentException("Source or destination array does not have enough space for the specified bit range");
-            }
-
-            for (int bitIndex = 0; bitIndex < numBits; bitIndex++) {
-                // 源的字节索引和位索引
-                int srcByteIndex = (srcPos + bitIndex) / 8;
-                int srcBitIndex = (srcPos + bitIndex) % 8;
-
-                // 目标的字节索引和位索引
-                int dstByteIndex = (dstPos + bitIndex) / 8;
-                int dstBitIndex = (dstPos + bitIndex) % 8;
-
-                // 从源字节中提取比特
-                int srcBit = (src[srcByteIndex] >> (7 - srcBitIndex)) & 1;
-
-                // 清除目标字节中的相应位
-                dst[dstByteIndex] &= ~(1 << (7 - dstBitIndex));
-
-                // 设置目标字节中的相应位
-                dst[dstByteIndex] |= (srcBit << (7 - dstBitIndex));
+            if (dstPos % 8 == 0) {
+                System.arraycopy(src, 0, dst, dstPos / 8, src.length);
+            } else {
+                dst[dstPos / 8] |= src[0];
+                System.arraycopy(src, 1, dst, dstPos / 8 + 1, src.length - 1);
             }
         }
 
         @Override
         protected void bitVarIntEncoding() {
-            byte[] bytes;
-            int leading;
-            int numBits;
             for (int i = 0; i < period; i++) {
-                bytes = longToBytes(seasonalBlockBuffer[i]);
-                leading = Long.numberOfLeadingZeros(seasonalBlockBuffer[i]);
-                numBits = 64 - leading;
-                bitwiseCopy(bytes, leading, encodingSeasonalBlockBuffer, encodingSeasonalBlockBufferLength, numBits);
-//                if (numBits % 2 == 1) numBits += 1;  // revised
+                byte[] bytes = writeUnsignedVarLongWithOffsetToBytes(seasonalBlockBuffer[i], encodingSeasonalBlockBufferLength % 8);
+                int numBits = 64 - Long.numberOfLeadingZeros(seasonalBlockBuffer[i]);
+                bitwiseCopy(bytes, encodingSeasonalBlockBuffer, encodingSeasonalBlockBufferLength);
                 stdSeasonalWidths[i] = numBits;
                 encodingSeasonalBlockBufferLength += numBits;
             }
 
             for (int i = 0; i < writeIndex; i++) {
-                bytes = longToBytes(stdBlockBuffer[i]);
-                leading = Long.numberOfLeadingZeros(stdBlockBuffer[i]);
-                numBits = 64 - leading;
-                bitwiseCopy(bytes, leading, encodingBlockBuffer, encodingBlockBufferLength, numBits);
-//                if (numBits % 2 == 1) numBits += 1;  // revised
+                byte[] bytes = writeUnsignedVarLongWithOffsetToBytes(stdBlockBuffer[i], encodingBlockBufferLength % 8);
+                int numBits = 64 - Long.numberOfLeadingZeros(stdBlockBuffer[i]);
+                bitwiseCopy(bytes, encodingBlockBuffer, encodingBlockBufferLength);
                 stdBlockWidths[i] = numBits;
                 encodingBlockBufferLength += numBits;
             }
