@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="8.45.1">
+<file name="F:\IoTDB_Encoding\iotdb-api\external-api\src\main\java\org\apache\iotdb\external\api\IPropertiesLoader.java">
+</file>
+<file name="F:\IoTDB_Encoding\iotdb-api\external-api\src\main\java\org\apache\iotdb\external\api\thrift\JudgableServerContext.java">
+</file>
+<file name="F:\IoTDB_Encoding\iotdb-api\external-api\src\main\java\org\apache\iotdb\external\api\thrift\ServerContextFactory.java">
+</file>
+</checkstyle>

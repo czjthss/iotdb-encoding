@@ -221,14 +221,14 @@ public abstract class STD2Encoder extends Encoder {
 //
 
 
-        System.out.println("t2-t1: " + (t2 - t1));
-        System.out.println("t3-t2: " + (t3 - t2));
-        System.out.println("t4-t3: " + (t4 - t3));
-        System.out.println("t5-t4: " + (t5 - t4));
-        System.out.println("t6-t5: " + (t6 - t5));
-        System.out.println("t7-t6: " + (t7 - t6));
-
-        System.out.println("##################");
+//        System.out.println("t2-t1: " + (t2 - t1));
+//        System.out.println("t3-t2: " + (t3 - t2));
+//        System.out.println("t4-t3: " + (t4 - t3));
+//        System.out.println("t5-t4: " + (t5 - t4));
+//        System.out.println("t6-t5: " + (t6 - t5));
+//        System.out.println("t7-t6: " + (t7 - t6));
+//
+//        System.out.println("##################");
 
 //        System.out.println(t7 - t1);
 
