@@ -11,11 +11,15 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 
 public abstract class STD2Encoder extends Encoder {
     private static final Logger logger = LoggerFactory.getLogger(DeltaBinaryEncoder.class);
     protected ByteArrayOutputStream out;
+
+    private static final long[] biasArray = new long[]{255, 65535, 16777215};
 
     protected int blockSize;
 
@@ -227,7 +231,7 @@ public abstract class STD2Encoder extends Encoder {
 //        System.out.println("t5-t4: " + (t5 - t4));
 //        System.out.println("t6-t5: " + (t6 - t5));
 //        System.out.println("t7-t6: " + (t7 - t6));
-//
+
 //        System.out.println("##################");
 
 //        System.out.println(t7 - t1);
@@ -500,15 +504,80 @@ public abstract class STD2Encoder extends Encoder {
             // TODO: implement bitVarIntEncoding
         }
 
+//        @Override
+//        protected void calculateSeasonalComponent() {
+//            int periodNum = writeIndex / period;
+//            for (int i = 0; i < period; ++i) {
+//                if (i < writeIndex - periodNum * period) // exceeding period values
+//                    seasonalBlockBuffer[i] /= (periodNum + 1);
+//                else
+//                    seasonalBlockBuffer[i] /= periodNum;
+//            }
+//            // de-seasonal
+//            for (int i = 0; i < writeIndex; ++i) {
+//                stdBlockBuffer[i] -= seasonalBlockBuffer[i % period];
+//            }
+//        }
+
         @Override
         protected void calculateSeasonalComponent() {
-            int periodNum = writeIndex / period;
-            for (int i = 0; i < period; ++i) {
-                if (i < writeIndex - periodNum * period) // exceeding period values
-                    seasonalBlockBuffer[i] /= (periodNum + 1);
-                else
-                    seasonalBlockBuffer[i] /= periodNum;
+            ArrayList<Long> seasonalTemp = new ArrayList<>();
+            ArrayList<Long> stdTemp = new ArrayList<>();
+            long minValue, maxValue, tempValue, seasonalValue = -1, tempStorage, minStorage;
+            for (int i = 0, idx; i < period; ++i) {
+                idx = i;
+                while (idx < stdBlockBuffer.length) {
+                    stdTemp.add(stdBlockBuffer[idx]);
+                    idx += period;
+                }
+                // min-max
+                Optional<Long> minOptimal = stdTemp.stream().min(Long::compareTo);
+                Optional<Long> maxOptimal = stdTemp.stream().max(Long::compareTo);
+                minValue = minOptimal.get();
+                maxValue = maxOptimal.get();
+//                minValue = -100;
+//                maxValue = 100;
+                // temp
+                for (long stdValue : stdTemp) {
+                    for (long bias : biasArray) {
+                        tempValue = stdValue - bias;
+                        if (!seasonalTemp.contains(tempValue) && tempValue >= minValue && tempValue <= maxValue) {
+                            seasonalTemp.add(tempValue);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+//                Collections.sort(seasonalTemp);
+
+                // compare
+                minStorage = 0x3f3f3f3f;
+                for (long tempSeasonalValue : seasonalTemp) {
+                    tempStorage = 0;
+                    for (long stdValue : stdTemp) {
+                        tempStorage += 64 - Long.numberOfLeadingZeros(zigzagEncoder(stdValue - tempSeasonalValue));
+                    }
+                    if (tempStorage < minStorage) {
+                        minStorage = tempStorage;
+                        seasonalValue = tempSeasonalValue;
+                    }
+                }
+
+//                Collections.sort(seasonalTemp);
+//                for (long j : seasonalTemp) {
+//                    System.out.print(j + " ");
+//                }
+//                System.out.println();
+                // value
+                seasonalBlockBuffer[i] = seasonalValue;
+                stdTemp.clear();
+                seasonalTemp.clear();
             }
+//            for (int i = 0; i < period; ++i) {
+//                System.out.print(seasonalBlockBuffer[i] + " ");
+//            }
+//            System.out.println();
             // de-seasonal
             for (int i = 0; i < writeIndex; ++i) {
                 stdBlockBuffer[i] -= seasonalBlockBuffer[i % period];
@@ -618,6 +687,14 @@ public abstract class STD2Encoder extends Encoder {
         public long getMaxByteSize() {
             // The meaning of 24 is: index(4)+width(4)+minDeltaBase(8)+firstValue(8)
             return (long) 24 + writeIndex * 8L;
+        }
+    }
+
+    public static void main(String[] args) {
+        long value = (1 << 8) - 1;
+        for (int i = 8; i < 50; i += 8) {
+            value = (1 << i) - 1;
+            System.out.println(value);
         }
     }
 }

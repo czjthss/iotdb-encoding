@@ -24,6 +24,8 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.fileSystem.FSType;
 import org.apache.iotdb.tsfile.utils.FSUtils;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -37,6 +39,18 @@ public class TSFileConfig implements Serializable {
     /**
      * encoding configuration.
      */
+    public static void write2output(String string) {
+        try {
+            String OUTPUT_PATH = "/Users/chenzijie/Documents/GitHub/data/output/compression/output.txt";
+            FileWriter fileWritter = new FileWriter(OUTPUT_PATH, true);
+            BufferedWriter bw = new BufferedWriter(fileWritter);
+            bw.write(string);
+            bw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static final int RLE_MIN_REPEATED_NUM = 8;
 
     public static final int RLE_MAX_REPEATED_NUM = 0x7FFF;
@@ -140,7 +154,15 @@ public class TSFileConfig implements Serializable {
     /**
      * Default block size of std.
      */
-    private int stdBlockSize = 10000;
+    private int stdBlockSize = 128;
+    /**
+     * Default block size of rle.
+     */
+    private int rleBlockSize = 128;
+    /**
+     * Default block size of ts2diff.
+     */
+    private int ts2diffBlockSize = 128;
     /**
      * Default frequency type is SINGLE_FREQ.
      */
@@ -336,6 +358,23 @@ public class TSFileConfig implements Serializable {
     public void setStdBlockSize(int stdBlockSize) {
         this.stdBlockSize = stdBlockSize;
     }
+
+    public int getRleBlockSize() {
+        return rleBlockSize;
+    }
+
+    public void setRleBlockSize(int rleBlockSize) {
+        this.rleBlockSize = rleBlockSize;
+    }
+
+    public void setTs2diffBlockSize(int ts2diffBlockSize) {
+        this.ts2diffBlockSize = ts2diffBlockSize;
+    }
+
+    public int getTs2diffBlockSize() {
+        return ts2diffBlockSize;
+    }
+
 
     public String getTimeEncoder() {
         return timeEncoding;

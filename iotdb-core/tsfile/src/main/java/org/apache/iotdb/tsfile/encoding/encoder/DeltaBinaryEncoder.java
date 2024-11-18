@@ -19,7 +19,9 @@
 
 package org.apache.iotdb.tsfile.encoding.encoder;
 
+import org.apache.iotdb.tsfile.common.conf.TSFileDescriptor;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
+import org.apache.iotdb.tsfile.utils.BloomFilter;
 import org.apache.iotdb.tsfile.utils.BytesUtils;
 import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
 
@@ -48,7 +50,7 @@ import java.io.IOException;
 public abstract class DeltaBinaryEncoder extends Encoder {
 
     //    protected static final int BLOCK_DEFAULT_SIZE = 512;
-    protected static final int BLOCK_DEFAULT_SIZE = 10000; // 30000000
+//    protected static final int BLOCK_DEFAULT_SIZE = 10240; // 128
     private static final Logger logger = LoggerFactory.getLogger(DeltaBinaryEncoder.class);
     protected ByteArrayOutputStream out;
     protected int blockSize;
@@ -134,7 +136,8 @@ public abstract class DeltaBinaryEncoder extends Encoder {
         private int minDeltaBase;
 
         public IntDeltaEncoder() {
-            this(BLOCK_DEFAULT_SIZE);
+            this(TSFileDescriptor.getInstance().getConfig().getTs2diffBlockSize());
+//            this(BLOCK_DEFAULT_SIZE);
         }
 
         /**
@@ -242,7 +245,8 @@ public abstract class DeltaBinaryEncoder extends Encoder {
         private long minDeltaBase;
 
         public LongDeltaEncoder() {
-            this(BLOCK_DEFAULT_SIZE);
+            this(TSFileDescriptor.getInstance().getConfig().getTs2diffBlockSize());
+//            this(BLOCK_DEFAULT_SIZE);
         }
 
         /**
@@ -345,6 +349,7 @@ public abstract class DeltaBinaryEncoder extends Encoder {
             for (int i = 0; i < writeIndex; i++) {
                 width = Math.max(width, getValueWidth(deltaBlockBuffer[i]));
             }
+//            System.out.println("TS_2DIFF width: " + width);
             return width;
         }
 

@@ -28,7 +28,7 @@ import java.io.ByteArrayOutputStream;
 
 public class RLBE extends Encoder {
   // Every BLOCK_DEFAULT_SIZE values are followed by a header
-  protected static final int BLOCK_DEFAULT_SIZE = 10000;
+  protected static final int BLOCK_DEFAULT_SIZE = 10108;
 
   protected static final Logger logger = LoggerFactory.getLogger(RLBE.class);
 

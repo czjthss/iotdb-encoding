@@ -112,7 +112,6 @@ public abstract class RleDecoder extends Decoder {
     // lastBitPackedNum indicates how many values is useful
     int lastBitPackedNum = ReadWriteIOUtils.read(byteCache);
     if (bitPackedGroupCount > 0) {
-
       currentCount =
           (bitPackedGroupCount - 1) * TSFileConfig.RLE_MIN_REPEATED_NUM + lastBitPackedNum;
       bitPackingNum = currentCount;

@@ -4,14 +4,11 @@ import org.apache.iotdb.tsfile.common.conf.TSFileDescriptor;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.utils.BytesUtils;
 import org.apache.iotdb.tsfile.utils.ReadWriteIOUtils;
-import org.apache.iotdb.tsfile.encoding.bitpacking.LongPacker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public abstract class STDEncoder extends Encoder {
     private static final Logger logger = LoggerFactory.getLogger(DeltaBinaryEncoder.class);
@@ -33,16 +30,6 @@ public abstract class STDEncoder extends Encoder {
     protected int anomalyNumber = 0;
     protected int anomalyWidth = 0;
     protected int anomalyIndexWidth = 0;
-
-    protected int[] stdSeasonalWidths;
-    protected int[] stdBlockWidths;
-    protected byte[] encodingSeasonalWidths;
-    protected byte[] encodingBlockWidths;
-    protected int encodingSeasonalWidthsLength;
-    protected int encodingBlockWidthsLength;
-
-    protected int encodingSeasonalBlockBufferLength;
-    protected int encodingBlockBufferLength;
 
 
     /**
@@ -72,10 +59,6 @@ public abstract class STDEncoder extends Encoder {
     protected abstract void calculateBitWidthsForSTDBlockBuffer();
 
     protected abstract void calculateBitWidthsForSeasonalBlockBuffer();
-
-    protected abstract void byteVarIntEncoding();
-
-    protected abstract void bitVarIntEncoding();
 
     /**
      * calling this method to flush all values which haven't encoded to result byte array.
@@ -133,24 +116,6 @@ public abstract class STDEncoder extends Encoder {
 
     protected abstract void writeDataWithMinWidth();
 
-    protected void rleEncoding() throws IOException {
-        ByteArrayOutputStream rleOut = new ByteArrayOutputStream();
-        IntRleEncoder encoder = new IntRleEncoder();
-        for (int val : stdSeasonalWidths) {
-            encoder.encode(val, rleOut);
-        }
-        encoder.flush(rleOut);
-        System.arraycopy(rleOut.toByteArray(), 0, encodingSeasonalWidths, 0, rleOut.size());
-        encodingSeasonalWidthsLength = rleOut.size();
-        rleOut.reset();
-        for (int val : stdBlockWidths) {
-            encoder.encode(val, rleOut);
-        }
-        encoder.flush(rleOut);
-        System.arraycopy(rleOut.toByteArray(), 0, encodingBlockWidths, 0, rleOut.size());
-        encodingBlockWidthsLength = rleOut.size();
-    }
-
     private void flushBlockBuffer(ByteArrayOutputStream out) throws IOException {
         if (writeIndex == -1) {
             return;
@@ -160,35 +125,40 @@ public abstract class STDEncoder extends Encoder {
         zigzagEncoding();
 
         this.out = out;
-//        // calculate width
-//        calculateBitWidthsForSTDBlockBuffer();
-//        calculateBitWidthsForSeasonalBlockBuffer();
-//        // store
-//        writeHeaderToBytes();
-//        writeSeasonalWithMinWidth();
-//        // anomaly
-//        writeAnomalyWithMinWidth();
-//        writeAnomalyIndexWithMinWidth();
-//        // data
-//        writeDataWithMinWidth();
+        // calculate width
+        calculateBitWidthsForSTDBlockBuffer();
+        calculateBitWidthsForSeasonalBlockBuffer();
+        // store
+        writeHeaderToBytes();
 
-        byteVarIntEncoding();
-        rleEncoding();
-        ReadWriteIOUtils.write(period, this.out);
-        ReadWriteIOUtils.write(writeIndex, this.out);
-        ReadWriteIOUtils.write(encodingSeasonalWidthsLength, this.out);
-        ReadWriteIOUtils.write(encodingBlockWidthsLength, this.out);
-        ReadWriteIOUtils.write(encodingSeasonalBlockBufferLength, this.out);
-        ReadWriteIOUtils.write(encodingBlockBufferLength, this.out);
-        writeFirstValue();
+        int s1 = out.size();
 
-        this.out.write(encodingSeasonalWidths, 0, encodingSeasonalWidthsLength);
-        this.out.write(encodingBlockWidths, 0, encodingBlockWidthsLength);
-        this.out.write(encodingSeasonalBlockBuffer, 0, encodingSeasonalBlockBufferLength);
-        this.out.write(encodingBlockBuffer, 0, encodingBlockBufferLength);
+        writeSeasonalWithMinWidth();
+
+        int s2 = out.size();
+
+        // anomaly
+        writeAnomalyWithMinWidth();
+
+        int s3 = out.size();
+
+        writeAnomalyIndexWithMinWidth();
+
+        int s4 = out.size();
+
+        // data
+        writeDataWithMinWidth();
+
+        int s5 = out.size();
 
         reset();
         writeIndex = -1;
+//        System.out.println(s1);
+//        System.out.println(s2 - s1);
+//        System.out.println(s3 - s2);
+//        System.out.println(s4 - s3);
+//        System.out.println(s5 - s4);
+//        System.out.println("############");
     }
 
     public static class IntSTDEncoder extends STDEncoder {
@@ -239,16 +209,6 @@ public abstract class STDEncoder extends Encoder {
             for (int i = 0; i < period; i++) {
                 seasonalWidth = Math.max(seasonalWidth, getValueWidth(seasonalBlockBuffer[i]));
             }
-        }
-
-        @Override
-        protected void byteVarIntEncoding() {
-
-        }
-
-        @Override
-        protected void bitVarIntEncoding() {
-
         }
 
         @Override
@@ -350,10 +310,6 @@ public abstract class STDEncoder extends Encoder {
             seasonalBlockBuffer = new long[period];
             encodingBlockBuffer = new byte[blockSize * 8];
             encodingSeasonalBlockBuffer = new byte[period * 8];
-            stdSeasonalWidths = new int[period];
-            stdBlockWidths = new int[blockSize];
-            encodingSeasonalWidths = new byte[period * 4];
-            encodingBlockWidths = new byte[blockSize * 4];
             reset();
         }
 
@@ -422,48 +378,48 @@ public abstract class STDEncoder extends Encoder {
             out.write(encodingBlockBuffer, 0, encodingLength);
         }
 
-        protected byte[] writeUnsignedVarLongToBytes(Long value) {
-            byte[] buf = new byte[10];
-            int pos = 0;
-            while ((value & 0xFFFFFF00L) != 0L) {
-                buf[pos++] = (byte)(value & 0xFF);
-                value >>>= 8;
-            }
-            buf[pos++] = (byte)(value & 0xFF);
-            return Arrays.copyOfRange(buf, 0, pos);
-        }
+//        @Override
+//        protected void calculateSeasonalComponent() {
+//            int periodNum = writeIndex / period;
+//            for (int i = 0; i < period; ++i) {
+//                if (i < writeIndex - periodNum * period) // exceeding period values
+//                    seasonalBlockBuffer[i] /= (periodNum + 1);
+//                else
+//                    seasonalBlockBuffer[i] /= periodNum;
+//            }
+//            // de-seasonal
+//            for (int i = 0; i < writeIndex; ++i) {
+//                stdBlockBuffer[i] -= seasonalBlockBuffer[i % period];
+//            }
+//        }
 
-        @Override
-        protected void byteVarIntEncoding() {
-            for (int i = 0; i < period; i++) {
-                byte[] bytes = writeUnsignedVarLongToBytes(seasonalBlockBuffer[i]);
-                System.arraycopy(bytes, 0, encodingSeasonalBlockBuffer, i * bytes.length, bytes.length);
-                stdSeasonalWidths[i] = bytes.length;
-                encodingSeasonalBlockBufferLength += bytes.length;
-            }
-
-            for (int i = 0; i < writeIndex; i++) {
-                byte[] bytes = writeUnsignedVarLongToBytes(stdBlockBuffer[i]);
-                System.arraycopy(bytes, 0, encodingBlockBuffer, i * bytes.length, bytes.length);
-                stdBlockWidths[i] = bytes.length;
-                encodingBlockBufferLength += bytes.length;
-            }
-        }
-
-        @Override
-        protected void bitVarIntEncoding() {
-            // TODO: implement bitVarIntEncoding
-        }
+//        @Override
+//        protected void calculateSeasonalComponent() {
+//        }
 
         @Override
         protected void calculateSeasonalComponent() {
-            int periodNum = writeIndex / period;
-            for (int i = 0; i < period; ++i) {
-                if (i < writeIndex - periodNum * period) // exceeding period values
-                    seasonalBlockBuffer[i] /= (periodNum + 1);
-                else
-                    seasonalBlockBuffer[i] /= periodNum;
+            long[] seasonalMin = new long[period];
+            long[] seasonalMax = new long[period];
+
+            for (int i = 0; i < writeIndex; ++i) {
+                if (i < period) {
+                    seasonalMin[i] = stdBlockBuffer[i];
+                    seasonalMax[i] = stdBlockBuffer[i];
+                } else if (stdBlockBuffer[i] < seasonalMin[i % period]) {
+                    seasonalMin[i % period] = stdBlockBuffer[i];
+                } else if (stdBlockBuffer[i] > seasonalMax[i % period]) {
+                    seasonalMax[i % period] = stdBlockBuffer[i];
+                }
             }
+
+            // range and seasonal
+            long range;
+            for (int i = 0; i < period; ++i) {
+                range = (seasonalMax[i] - seasonalMin[i]) / 2;
+                seasonalBlockBuffer[i] = seasonalMax[i] - range;
+            }
+
             // de-seasonal
             for (int i = 0; i < writeIndex; ++i) {
                 stdBlockBuffer[i] -= seasonalBlockBuffer[i % period];
@@ -549,19 +505,7 @@ public abstract class STDEncoder extends Encoder {
             for (int i = 0; i < blockSize; i++) {
                 encodingBlockBuffer[i] = 0;
                 stdBlockBuffer[i] = 0L;
-                encodingBlockWidths[i] = 0;
-                stdBlockWidths[i] = 0;
             }
-            for (int i = 0; i < period; i++) {
-                encodingSeasonalBlockBuffer[i] = 0;
-                seasonalBlockBuffer[i] = 0L;
-                encodingSeasonalWidths[i] = 0;
-                stdSeasonalWidths[i] = 0;
-            }
-            encodingBlockBufferLength = 0;
-            encodingSeasonalBlockBufferLength = 0;
-            encodingBlockWidthsLength = 0;
-            encodingSeasonalWidthsLength = 0;
         }
 
         @Override

@@ -32,12 +32,6 @@ public abstract class STDDecoder extends Decoder {
     protected int anomalyNumber;
     protected int anomalyWidth;
     protected int anomalyIndexWidth;
-    protected int seasonalWidthLength;
-    protected int blockWidthLength;
-    protected int seasonalBlockBufferLength;
-    protected int blockBufferLength;
-    protected ByteBuffer seasonalWidths;
-    protected ByteBuffer blockWidths;
 
     /**
      * max bit length of all value in a pack.
@@ -157,7 +151,6 @@ public abstract class STDDecoder extends Decoder {
         private long[] anomaly;
         private int[] anomalyIndex;
         private long previous;
-        private final IntRleDecoder decoder = new IntRleDecoder();
 
         public LongSTDDecoder() {
             super();
@@ -188,90 +181,31 @@ public abstract class STDDecoder extends Decoder {
          * @return long value
          */
         protected long loadIntBatch(ByteBuffer buffer) {
-//            period = ReadWriteIOUtils.readInt(buffer);
-//            seasonalWidth = ReadWriteIOUtils.readInt(buffer);
-//            // anomaly
-//            anomalyNumber = ReadWriteIOUtils.readInt(buffer);
-//            anomalyWidth = ReadWriteIOUtils.readInt(buffer);
-//            anomalyIndexWidth = ReadWriteIOUtils.readInt(buffer);
-//            // number
-//            packNum = ReadWriteIOUtils.readInt(buffer);
-//            packWidth = ReadWriteIOUtils.readInt(buffer);
-//            firstValue = ReadWriteIOUtils.readLong(buffer);
-//            count++;
-//
-//            encodingLength = ceil(period * seasonalWidth) + ceil(anomalyNumber * anomalyWidth) + ceil(anomalyNumber * anomalyIndexWidth) + ceil((packNum - anomalyNumber) * packWidth);
-//            stdBuf = new byte[encodingLength];
-//            buffer.get(stdBuf);
-//            allocateDataArray();
-//
-//            previous = firstValue;
-//            readIntTotalCount = packNum;
-//            nextReadIndex = 0;
-//            readSeasonal();
-//            readAnomaly();
-//            readAnomalyIndex();
-//            readPack();
-//            return firstValue;
-
             period = ReadWriteIOUtils.readInt(buffer);
+            seasonalWidth = ReadWriteIOUtils.readInt(buffer);
+            // anomaly
+            anomalyNumber = ReadWriteIOUtils.readInt(buffer);
+            anomalyWidth = ReadWriteIOUtils.readInt(buffer);
+            anomalyIndexWidth = ReadWriteIOUtils.readInt(buffer);
+            // number
             packNum = ReadWriteIOUtils.readInt(buffer);
-            seasonalWidthLength = ReadWriteIOUtils.readInt(buffer);
-            blockWidthLength = ReadWriteIOUtils.readInt(buffer);
-            seasonalBlockBufferLength = ReadWriteIOUtils.readInt(buffer);
-            blockBufferLength = ReadWriteIOUtils.readInt(buffer);
+            packWidth = ReadWriteIOUtils.readInt(buffer);
             firstValue = ReadWriteIOUtils.readLong(buffer);
             count++;
 
-            encodingLength = seasonalBlockBufferLength + blockBufferLength;
-            seasonalWidths = ByteBuffer.allocate(seasonalWidthLength);
-            blockWidths = ByteBuffer.allocate(blockWidthLength);
-            buffer.get(seasonalWidths.array());
-            buffer.get(blockWidths.array());
+            encodingLength = ceil(period * seasonalWidth) + ceil(anomalyNumber * anomalyWidth) + ceil(anomalyNumber * anomalyIndexWidth) + ceil((packNum - anomalyNumber) * packWidth);
             stdBuf = new byte[encodingLength];
             buffer.get(stdBuf);
-
-            data = new long[packNum];
-            seasonal = new long[period];
+            allocateDataArray();
 
             previous = firstValue;
             readIntTotalCount = packNum;
             nextReadIndex = 0;
-            readVarIntSeasonal();
-            readVarIntPack();
+            readSeasonal();
+            readAnomaly();
+            readAnomalyIndex();
+            readPack();
             return firstValue;
-        }
-
-        private void readVarIntSeasonal() {
-            long value;
-            int pos = 0;
-            int width;
-            for (int i = 0; i < period; i++) {
-                width = decoder.readInt(seasonalWidths);
-                value = 0;
-                for (int j = 0; j < width; j++) {
-                    value |= (long) (stdBuf[pos + j] & 0xFF) << (j * 8);
-                }
-                pos += width;
-                seasonal[i] = zigzagDecoder(value);
-            }
-        }
-
-        private void readVarIntPack() {
-            long value;
-            int pos = seasonalBlockBufferLength;
-            int width;
-            for (int i = 0; i < packNum; i++) {
-                width = decoder.readInt(blockWidths);
-                value = 0;
-                for (int j = 0; j < width; j++) {
-                    value |= (long) (stdBuf[pos + j] & 0xFF) << (j * 8);
-                }
-                pos += width;
-                value = zigzagDecoder(value);
-                data[i] = previous + value + seasonal[i % period];
-                previous = data[i];
-            }
         }
 
         protected long zigzagDecoder(long n) {

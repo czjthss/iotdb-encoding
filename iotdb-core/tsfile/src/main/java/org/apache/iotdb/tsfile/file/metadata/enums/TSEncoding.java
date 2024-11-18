@@ -37,9 +37,7 @@ public enum TSEncoding {
     RLBE((byte) 13),
     BUFF((byte) 14),
     STD((byte) 15),
-    STD2((byte) 16),
-    STD3((byte) 17);
-
+    MyRLE((byte) 16);
     private final byte type;
 
     TSEncoding(byte type) {
@@ -88,10 +86,6 @@ public enum TSEncoding {
                 return TSEncoding.BUFF;
             case 15:
                 return TSEncoding.STD;
-            case 16:
-                return TSEncoding.STD2;
-            case 17:
-                return TSEncoding.STD3;
             default:
                 throw new IllegalArgumentException("Invalid input: " + encoding);
         }

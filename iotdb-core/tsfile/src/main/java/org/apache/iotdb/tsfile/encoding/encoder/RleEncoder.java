@@ -215,7 +215,7 @@ public abstract class RleEncoder<T extends Comparable<T>> extends Encoder {
   protected void encodeValue(T value) {
     if (!isBitWidthSaved) {
       // save bit width in header,
-      // perpare for read
+      // prepare for read
       byteCache.write(bitWidth);
       isBitWidthSaved = true;
     }

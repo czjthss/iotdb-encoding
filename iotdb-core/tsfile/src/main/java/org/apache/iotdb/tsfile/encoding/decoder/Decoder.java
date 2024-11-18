@@ -177,27 +177,20 @@ public abstract class Decoder {
             case STD:
                 switch (dataType) {
                     case INT32:
-                        return new STDDecoder.IntSTDDecoder();
+                        return new STD2Decoder.IntSTDDecoder();
                     case INT64:
+//                        return new STD2Decoder.LongSTDDecoder();
+//                        return new STD1Decoder.LongSTDDecoder();
                         return new STDDecoder.LongSTDDecoder();
                     default:
                         throw new TsFileDecodingException(String.format(ERROR_MSG, encoding, dataType));
                 }
-            case STD2:
+            case MyRLE:
                 switch (dataType) {
                     case INT32:
-                        return new STD2Decoder.IntSTDDecoder();
+                        return new MyRLEDecoder.IntRLEDecoder();
                     case INT64:
-                        return new STD2Decoder.LongSTDDecoder();
-                    default:
-                        throw new TsFileDecodingException(String.format(ERROR_MSG, encoding, dataType));
-                }
-            case STD3:
-                switch (dataType) {
-                    case INT32:
-                        return new STD3Decoder.IntSTDDecoder();
-                    case INT64:
-                        return new STD3Decoder.LongSTDDecoder();
+                        return new MyRLEDecoder.LongRLEDecoder();
                     default:
                         throw new TsFileDecodingException(String.format(ERROR_MSG, encoding, dataType));
                 }

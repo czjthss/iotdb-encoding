@@ -89,7 +89,6 @@ public class IntRleEncoder extends RleEncoder<Integer> {
 
   @Override
   protected void clearBuffer() {
-
     for (int i = numBufferedValues; i < TSFileConfig.RLE_MIN_REPEATED_NUM; i++) {
       bufferedValues[i] = 0;
     }
