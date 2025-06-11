@@ -1,79 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-    <component name="ExternalStorageConfigurationManager" enabled="true"/>
-    <component name="MavenProjectsManager">
-        <option name="originalFiles">
-            <list>
-                <option value="$PROJECT_DIR$/pom.xml"/>
-            </list>
-        </option>
-        <option name="ignoredFiles">
-            <set>
-                <option value="$PROJECT_DIR$/distribution/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/flink/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/hadoop/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/jdbc/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/kafka/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/mqtt-customize/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/mqtt/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/pulsar/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/rabbitmq/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/rest-java-example/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/rocketmq/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/session/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/trigger/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/tsfile/pom.xml"/>
-                <option value="$PROJECT_DIR$/example/udf/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-api/external-api/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-api/pipe-api/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-api/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-api/trigger-api/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-api/udf-api/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-client/cli/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-client/client-py/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-client/isession/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-client/jdbc/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-client/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-client/service-rpc/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-client/session/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/flink-iotdb-connector/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/flink-sql-iotdb-connector/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/flink-tsfile-connector/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/grafana-connector/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/hadoop/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/hive-connector/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/spark-iotdb-connector/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/spark-iotdb-connector/scala_2.11/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/spark-iotdb-connector/scala_2.12/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/spark-tsfile/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-connector/zeppelin-interpreter/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/antlr/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/confignode/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/consensus/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/datanode/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/metrics/dropwizard-metrics/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/metrics/interface/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/metrics/micrometer-metrics/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/metrics/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/mlnode/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/node-commons/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-core/tsfile/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-protocol/openapi/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-protocol/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-protocol/thrift-commons/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-protocol/thrift-confignode/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-protocol/thrift-consensus/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-protocol/thrift-datanode/pom.xml"/>
-                <option value="$PROJECT_DIR$/iotdb-protocol/thrift-mlnode/pom.xml"/>
-                <option value="$PROJECT_DIR$/library-udf/pom.xml"/>
-            </set>
-        </option>
-        <option name="workspaceImportForciblyTurnedOn" value="true"/>
-    </component>
-    <component name="ProjectRootManager" version="2" languageLevel="JDK_18" default="true" project-jdk-name="18" project-jdk-type="JavaSDK">
-        <output url="file://$PROJECT_DIR$/iotdb-core/tsfile/target"/>
-    </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/pom.xml" />
+      </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/distribution/pom.xml" />
+        <option value="$PROJECT_DIR$/example/flink/pom.xml" />
+        <option value="$PROJECT_DIR$/example/hadoop/pom.xml" />
+        <option value="$PROJECT_DIR$/example/jdbc/pom.xml" />
+        <option value="$PROJECT_DIR$/example/kafka/pom.xml" />
+        <option value="$PROJECT_DIR$/example/mqtt-customize/pom.xml" />
+        <option value="$PROJECT_DIR$/example/mqtt/pom.xml" />
+        <option value="$PROJECT_DIR$/example/pom.xml" />
+        <option value="$PROJECT_DIR$/example/pulsar/pom.xml" />
+        <option value="$PROJECT_DIR$/example/rabbitmq/pom.xml" />
+        <option value="$PROJECT_DIR$/example/rest-java-example/pom.xml" />
+        <option value="$PROJECT_DIR$/example/rocketmq/pom.xml" />
+        <option value="$PROJECT_DIR$/example/session/pom.xml" />
+        <option value="$PROJECT_DIR$/example/trigger/pom.xml" />
+        <option value="$PROJECT_DIR$/example/tsfile/pom.xml" />
+        <option value="$PROJECT_DIR$/example/udf/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-api/external-api/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-api/pipe-api/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-api/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-api/trigger-api/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-api/udf-api/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-client/cli/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-client/client-py/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-client/isession/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-client/jdbc/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-client/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-client/service-rpc/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-client/session/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/flink-iotdb-connector/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/flink-sql-iotdb-connector/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/flink-tsfile-connector/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/grafana-connector/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/hadoop/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/hive-connector/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/spark-iotdb-connector/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/spark-iotdb-connector/scala_2.11/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/spark-iotdb-connector/scala_2.12/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/spark-tsfile/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-connector/zeppelin-interpreter/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/antlr/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/confignode/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/consensus/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/datanode/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/metrics/dropwizard-metrics/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/metrics/interface/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/metrics/micrometer-metrics/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/metrics/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/mlnode/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/node-commons/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-core/tsfile/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-protocol/openapi/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-protocol/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-protocol/thrift-commons/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-protocol/thrift-confignode/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-protocol/thrift-consensus/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-protocol/thrift-datanode/pom.xml" />
+        <option value="$PROJECT_DIR$/iotdb-protocol/thrift-mlnode/pom.xml" />
+        <option value="$PROJECT_DIR$/library-udf/pom.xml" />
+      </set>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="openjdk-21" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/iotdb-core/tsfile/target" />
+  </component>
 </project>

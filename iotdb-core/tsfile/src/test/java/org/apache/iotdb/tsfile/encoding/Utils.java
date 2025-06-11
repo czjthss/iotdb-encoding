@@ -1,5 +1,7 @@
 package org.apache.iotdb.tsfile.encoding;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
@@ -7,6 +9,7 @@ import org.apache.commons.math3.transform.TransformType;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -18,7 +21,6 @@ public class Utils {
         }
         return array;
     }
-
 
     public static double[] loadSquareWave(int size, int period, double scale) {
         double[] ts = new double[size];
@@ -36,7 +38,7 @@ public class Utils {
         return ts;
     }
 
-    public static double[] loadTimeSeriesData(String filename, int dataLen) throws FileNotFoundException {
+    public static double[] loadTimeSeriesDataFromCsv(String filename, int dataLen) throws FileNotFoundException {
         Scanner sc = new Scanner(new File(filename));
         ArrayList<Double> tsList = new ArrayList<>();
 
@@ -50,6 +52,35 @@ public class Utils {
         }
         // standardize
         return convertListToArray(tsList);
+    }
+
+    public static class RtnDataFromJson {
+        public final double[] ts;
+        public final int period;
+
+        public RtnDataFromJson(double[] ts, int period) {
+            this.ts = ts;
+            this.period = period;
+        }
+    }
+
+    public static RtnDataFromJson loadTimeSeriesDataFromJson(String filename, int dataLen) throws FileNotFoundException {
+        Gson gson = new Gson();
+
+        FileReader reader = new FileReader(filename);
+        JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
+
+        double[] whole = gson.fromJson(jsonObject.get("ts"), double[].class);
+        int period = gson.fromJson(jsonObject.get("period"), int.class);
+
+        // intercept dataLen portion
+        if (dataLen > whole.length) {
+            dataLen = whole.length;
+        }
+        double[] ts = new double[dataLen];
+        System.arraycopy(whole, 0, ts, 0, dataLen);
+
+        return new RtnDataFromJson(ts, period);
     }
 
     public static int getScale(double[] ts) {
@@ -109,25 +140,5 @@ public class Utils {
 
         // Calculate the actual period from the peak index
         return fft.length / periodIndex;
-    }
-
-
-    public static boolean checkCorrectness(double[] original, double[] decoded) {
-        int cnt = 0;
-        for (int idx = 0; idx < original.length; ++idx) {
-            if (original[idx] - decoded[idx] > 1e-2) {
-                cnt++;
-                System.out.println("Error: " + idx + "-th Number is not equal. The original value: " + original[idx] + ". The decoded value: " + decoded[idx]);
-            }
-        }
-        return cnt == 0;
-    }
-
-    public static void main(String[] args) {
-        double[] ts = loadSquareWave(200, 20, 100.0);
-        for (double value : ts) {
-            System.out.print(value + " ");
-        }
-        System.out.println();
     }
 }

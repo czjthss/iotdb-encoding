@@ -159,7 +159,7 @@ public abstract class TSEncodingBuilder {
 //                    return new LongRleEncoder2();
                 case FLOAT:
                 case DOUBLE:
-                    return new FloatEncoder(TSEncoding.RLE, type, maxPointNumber);
+                    return new FloatEncoder(TSEncoding.RLE, type, TSFileDescriptor.getInstance().getConfig().getScale());
                 default:
                     throw new UnSupportedDataTypeException("RLE doesn't support data type: " + type);
             }
@@ -214,7 +214,7 @@ public abstract class TSEncodingBuilder {
                     return new DeltaBinaryEncoder.LongDeltaEncoder();
                 case FLOAT:
                 case DOUBLE:
-                    return new FloatEncoder(TSEncoding.TS_2DIFF, type, maxPointNumber);
+                    return new FloatEncoder(TSEncoding.TS_2DIFF, type, TSFileDescriptor.getInstance().getConfig().getScale());
                 default:
                     throw new UnSupportedDataTypeException("TS_2DIFF doesn't support data type: " + type);
             }
@@ -257,7 +257,6 @@ public abstract class TSEncodingBuilder {
      * for FLOAT, DOUBLE.
      */
     public static class GorillaV1 extends TSEncodingBuilder {
-
         @Override
         public Encoder getEncoder(TSDataType type) {
             switch (type) {
@@ -420,6 +419,10 @@ public abstract class TSEncodingBuilder {
                     return new IntZigzagEncoder();
                 case INT64:
                     return new LongZigzagEncoder();
+                case FLOAT:
+                    return new IntZigzagEncoder.FloatZigzagEncoder();
+                case DOUBLE:
+                    return new LongZigzagEncoder.DoubleZigzagEncoder();
                 default:
                     throw new UnSupportedDataTypeException("ZIGZAG doesn't support data type: " + type);
             }
@@ -469,14 +472,16 @@ public abstract class TSEncodingBuilder {
         public Encoder getEncoder(TSDataType type) {
             switch (type) {
                 case INT32:
-                    return new STD2Encoder.IntSTDEncoder();
+                    return new STDEncoder.IntSTDEncoder();
                 case INT64:
-//                    return new STDEncoder.LongSTDEncoder();
-//                    return new STD1Encoder.LongSTDEncoder();
+                    return new STDEncoder.LongSTDEncoder();  // best-decomposition + bit-varint + residual length bit-packing
 //                    return new STD2Encoder.LongSTDEncoder();  // byte-varint
 //                    return new STD3Encoder.LongSTDEncoder();  // best-decomposition + bit-varint
 //                    return new STD4Encoder.LongSTDEncoder();  // best-decomposition + bit-packing + residual length rle
-                    return new STD5Encoder.LongSTDEncoder();  // best-decomposition + bit-varint + residual length bit-packing
+                case FLOAT:
+                    return new STDEncoder.FloatSTDEncoder();  // best-decomposition + bit-varint + residual length bit-packing
+                case DOUBLE:
+                    return new STDEncoder.DoubleSTDEncoder();  // best-decomposition + bit-varint + residual length bit-packing
                 default:
                     throw new UnSupportedDataTypeException("STD doesn't support data type: " + type);
             }

@@ -118,6 +118,10 @@ public abstract class Decoder {
                         return new IntZigzagDecoder();
                     case INT64:
                         return new LongZigzagDecoder();
+                    case FLOAT:
+                        return new IntZigzagDecoder.FloatZigzagDecoder();
+                    case DOUBLE:
+                        return new LongZigzagDecoder.DoubleZigzagDecoder();
                     default:
                         throw new TsFileDecodingException(String.format(ERROR_MSG, encoding, dataType));
                 }
@@ -177,11 +181,13 @@ public abstract class Decoder {
             case STD:
                 switch (dataType) {
                     case INT32:
-                        return new STD2Decoder.IntSTDDecoder();
+                        return new STDDecoder.IntSTDDecoder();
                     case INT64:
-//                        return new STD2Decoder.LongSTDDecoder();
-//                        return new STD1Decoder.LongSTDDecoder();
                         return new STDDecoder.LongSTDDecoder();
+                    case FLOAT:
+                        return new STDDecoder.FloatSTDDecoder();
+                    case DOUBLE:
+                        return new STDDecoder.DoubleSTDDecoder();
                     default:
                         throw new TsFileDecodingException(String.format(ERROR_MSG, encoding, dataType));
                 }

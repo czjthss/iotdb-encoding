@@ -1,7 +1,5 @@
 package org.apache.iotdb.tsfile.encoding;
 
-import io.airlift.slice.SizeOf;
-import org.apache.iotdb.tsfile.common.conf.TSFileConfig;
 import org.apache.iotdb.tsfile.common.conf.TSFileDescriptor;
 import org.apache.iotdb.tsfile.compress.ICompressor;
 import org.apache.iotdb.tsfile.compress.IUnCompressor;
@@ -12,17 +10,22 @@ import org.apache.iotdb.tsfile.file.metadata.enums.CompressionType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.FileWriter;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
-import static org.apache.iotdb.tsfile.encoding.Utils.loadTimeSeriesData;
+import static org.apache.iotdb.tsfile.encoding.Utils.loadTimeSeriesDataFromCsv;
+import static org.apache.iotdb.tsfile.encoding.Utils.loadTimeSeriesDataFromJson;
+import static org.apache.iotdb.tsfile.encoding.Utils.RtnDataFromJson;
 import static org.apache.iotdb.tsfile.encoding.Utils.loadSquareWave;
 import static org.apache.iotdb.tsfile.encoding.Utils.getScale;
 import static org.apache.iotdb.tsfile.encoding.Utils.getPeriod;
-import static org.apache.iotdb.tsfile.encoding.Utils.checkCorrectness;
 
 public class Exp {
-    private static final String INPUT_DIR = "/Users/chenzijie/Documents/GitHub/data/input/compression/";
+    private static final String INPUT_DIR = "/Users/chenzijie/Documents/GitHub/data/input/compression/json/";
     private static final String OUTPUT_DIR = "/Users/chenzijie/Documents/GitHub/data/output/compression/";
 
     // need to provide
@@ -30,18 +33,17 @@ public class Exp {
     private static TSEncoding encodingMethod;
     private static CompressionType compressionMethod;
 
-    // parameter: need to set for std
-    private static int scale;
-    private static int period;
     // record array
     private static byte[] encoded;
     private static byte[] compressed;
     private static byte[] uncompressed;
     private static double[] decoded;
 
-    // record time cost
+    // record results
     private static long encode_time;
     private static long decode_time;
+
+    private static double ratio;
 
     // dataset
     //            "ECG.csv",
@@ -54,40 +56,60 @@ public class Exp {
 //            "HHAR.csv",
 //            "POWER.csv",
 //            "TEMP.csv",
-//            "grid_value_from2020-11-29to2020-12-06_10543.csv",
-//            "yinlian_value_from2020-11-10to2020-12-07_8437.csv",
-//            "hangxin_c_from2019-08-11to2019-08-30_7428.csv",
-//            "liantong_data_from2018-12-19to2019-01-31_8180.csv",
-//            "guoshou_value_from2020-01-02to2020-01-21_7479.csv",
-//            "power_5241600.csv",
-//            "voltage_22825440.csv",
-//            "ghi_10617120.csv",
-            "weather_ghi_sfc_CMA.csv",
+
+            "power_52416.json",
+            "weather_ghi_sfc_CMA.json",
+            "yinlian_value_from2020-11-10to2020-12-07_8437.json",
+            "liantong_data_from2018-12-19to2019-01-31_8180.json",
+            "TEMP.json",
+            "weather_T (degC)_1159312.json",
+            "traffic_0_15140472.json",
+            "electricity_1_8469888.json",
+
+//            "grid_value_from2020-11-29to2020-12-06_10543.json",
+//            "guoshou_value_from2020-01-02to2020-01-21_7479.json",
+//            "exchange_0_68292.json",
 //            "weather_ghi_sfc_EC.csv",
+    };
+    private static final String[] datasetFileNameList = {
+            "Power",
+            "Ghi",
+            "Insurance",
+            "Telecom",
+            "Temp",
+            "Weather",
+            "Traffic",
+            "Electricity",
+
+//            "Grid",
+//            "Bank",
+//            "Exchange",
     };
 
     // select encoding algorithms
     private static final TSEncoding[] encodingList = {
 //            TSEncoding.PLAIN,
-            TSEncoding.STD,
 //            TSEncoding.MyRLE,
-            TSEncoding.TS_2DIFF,
-            TSEncoding.RLE,
-            TSEncoding.SPRINTZ,
-            TSEncoding.GORILLA,
-            TSEncoding.RLBE,
-            TSEncoding.CHIMP,
-            TSEncoding.ZIGZAG,
 
+            TSEncoding.STD,
+            TSEncoding.TS_2DIFF,
+//            TSEncoding.RLE,
+//            TSEncoding.SPRINTZ,
+//            TSEncoding.GORILLA,
+//            TSEncoding.RLBE,
+//            TSEncoding.CHIMP,
+//            TSEncoding.ZIGZAG,
 //            TSEncoding.BUFF,
+
 //            TSEncoding.ZIGZAG,
 //            TSEncoding.DICTIONARY,
     };
 
     private static final String[] encodingNameList = {
 //            "PLAIN",
-            "STD",
 //            "MyRLE",
+
+            "STD",
             "TS_2DIFF",
             "RLE",
             "SPRINTZ",
@@ -95,14 +117,15 @@ public class Exp {
             "RLBE",
             "CHIMP",
             "ZIGZAG",
+            "BUFF",
     };
 
     // select compression algorithms
     private static final CompressionType[] compressionList = {
 //            CompressionType.UNCOMPRESSED,
-            CompressionType.LZ4,
+//            CompressionType.LZ4,
 //            CompressionType.GZIP,
-            CompressionType.SNAPPY,
+//            CompressionType.SNAPPY,
 //            CompressionType.ZSTD,
 //            CompressionType.LZMA2,
     };
@@ -116,26 +139,27 @@ public class Exp {
 //            "LZMA2",
     };
 
+    public static void recordRatio(String string) throws Exception {
+        FileWriter fileWritter = new FileWriter(OUTPUT_DIR + "ratio.txt", true);
+        BufferedWriter bw = new BufferedWriter(fileWritter);
+        bw.write(string);
+        bw.close();
+    }
+
     private static void store() throws Exception {
-        // encoding and scaling
         long start = System.nanoTime();
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         Encoder encoder;
-        // use scaling+LONG or DOUBLE
-        if (encodingMethod == TSEncoding.STD || encodingMethod == TSEncoding.TS_2DIFF || encodingMethod == TSEncoding.RLE || encodingMethod == TSEncoding.MyRLE || encodingMethod == TSEncoding.ZIGZAG) {
-            encoder = TSEncodingBuilder.getEncodingBuilder(encodingMethod).getEncoder(TSDataType.INT64);
-            for (double value : original) {
-                encoder.encode((long) (value * Math.pow(10, scale)), buffer);
-            }
-        } else {
-            encoder = TSEncodingBuilder.getEncodingBuilder(encodingMethod).getEncoder(TSDataType.DOUBLE);
-            for (double value : original) {
-                encoder.encode(value, buffer);
-            }
+
+        // encoding
+        encoder = TSEncodingBuilder.getEncodingBuilder(encodingMethod).getEncoder(TSDataType.DOUBLE);
+        for (double value : original) {
+            encoder.encode(value, buffer);
         }
         encoder.flush(buffer);
 
+        // compression
         encoded = buffer.toByteArray();
         ICompressor compressor = ICompressor.getCompressor(compressionMethod);
         compressed = compressor.compress(encoded);
@@ -153,102 +177,109 @@ public class Exp {
         uncompressed = compressed.clone();
         uncompressed = unCompressor.uncompress(uncompressed);
         ByteBuffer ebuffer = ByteBuffer.wrap(uncompressed); // uncompressed
-        Decoder decoder = Decoder.getDecoderByType(encodingMethod, TSDataType.INT64);
+        Decoder decoder = Decoder.getDecoderByType(encodingMethod, TSDataType.DOUBLE);
         while (decoder.hasNext(ebuffer)) {
-            decoded[decoded_idx++] = decoder.readLong(ebuffer) / Math.pow(10, scale);
+            decoded[decoded_idx++] = decoder.readDouble(ebuffer);
         }
+
+//        check();
+
+        decode_time = System.nanoTime() - start;
+    }
+
+    private static void check() {
         for (int i = 0; i < original.length; ++i) {
-            if (original[i] - decoded[i] > 1e-3) {
+            if (Math.abs(original[i] - decoded[i]) > 1e-8) {
                 System.out.println("WRONG");
-                System.out.println(original[i] + " " + decoded[i]);
+                System.out.println(i + " " + original[i] + " " + decoded[i]);
                 break;
             }
             if (i == original.length - 1) {
                 System.out.println("CORRECT");
             }
         }
-//        decode_time = System.nanoTime() - start;
     }
 
-    public static void comparison() throws Exception {
-//        int dataLen = Integer.MAX_VALUE;
-        int dataLen = 52416;
-        int stdBlockSize = 100000;
-        int ts2diffBlockSize = 12800;
-        int rleBlockSize = 524160;  // 288
+    public static void dataset(int fileIdx) throws Exception {
+        String datafile = datasetFileList[fileIdx];
+        // print dataset file name
+        System.out.print(datasetFileNameList[fileIdx] + " & ");
+        // read dataset file
+        RtnDataFromJson rtnDataFromJson = loadTimeSeriesDataFromJson(INPUT_DIR + datafile, Integer.MAX_VALUE);
+        original = rtnDataFromJson.ts;
+        int period = rtnDataFromJson.period;
+//            period = getPeriod(original);
+        int scale = getScale(original);
 
-        int[] blockSizeArray = new int[10];
-        for (int i = 6; i < 16; i++) {
-            blockSizeArray[i - 6] = (int) Math.pow(10, 0.25 * i);
+        for (int idx = 0; idx < original.length; idx++) {
+            original[idx] = Math.round(original[idx] * Math.pow(10, scale)) / Math.pow(10, scale);
         }
 
-//        for (int i = 11; i < 21; i++) {
-//            blockSizeArray[i -11] = (int) Math.pow(10, 0.25 * i);
-//        }
+        TSFileDescriptor.getInstance().getConfig().setPeriodLength(period);
+        TSFileDescriptor.getInstance().getConfig().setScale(scale);
+    }
 
-//        for (int value : blockSizeArray) {
-//            stdBlockSize = value;
-//            ts2diffBlockSize = value;
 
-        for (String datafile : datasetFileList) {
-            System.out.println("###################");
-//            System.out.println(value);
-            System.out.println(datafile);
-            original = loadTimeSeriesData(INPUT_DIR + datafile, dataLen);
-//                System.out.println("original: " + original.length);
+    public static void running() throws Exception {
+        for (TSEncoding encoding : encodingList) {
+            // choose
+            encodingMethod = encoding;
+            compressionMethod = CompressionType.UNCOMPRESSED;
+            store();
+            query();
+            // calculate compression ratio
+            ratio = (double) compressed.length / (double) (original.length * Double.BYTES);
+//                System.out.println(encodingNameList[idx] + "\t" + String.format("%.3f", ratio) + "\t" + (encode_time) / original.length / 1e3 + "\t" + decode_time / 1e6);
+            System.out.print(String.format("%.3f", ratio) + " & ");
+//                System.out.print(String.format("%.3f", (decode_time) / original.length / 1e3) + " & ");
+            recordRatio(String.format("%.3f", ratio) + ",");
+        }
 
-//            original = loadSquareWave(1000000, 144, 10000.);
-            if (datafile.equals("liantong_data_from2018-12-19to2019-01-31_8180.csv") || datafile.equals("power_5241600.csv")) {
-                period = 144;
-            } else if (datafile.equals("guoshou_value_from2020-01-02to2020-01-21_7479.csv") || datafile.equals("hangxin_c_from2019-08-11to2019-08-30_7428.csv")
-                    || datafile.equals("yinlian_value_from2020-11-10to2020-12-07_8437.csv")) {
-                period = 288;
-            } else if (datafile.equals("voltage_22825440.csv") || datafile.equals("grid_value_from2020-11-29to2020-12-06_10543.csv")) {
-                period = 1440;
-            } else if (datafile.equals("weather_ghi_sfc_CMA.csv") || datafile.equals("weather_ghi_sfc_EC.csv")) {
-                period = 96;
-            } else {
-                period = getPeriod(original); // 1440
+        for (CompressionType compressionType : compressionList) {
+            // choose
+            encodingMethod = TSEncoding.PLAIN;
+            compressionMethod = compressionType;
+            store();
+            query();
+            // calculate compression ratio
+            ratio = (double) compressed.length / (double) (original.length * Double.BYTES);
+//                System.out.println(compressionNameList[idx] + "\t" + String.format("%.3f", ratio) + "\t" + (encode_time) / original.length / 1e3 + "\t" + decode_time / 1e6);
+            System.out.print(String.format("%.3f", ratio) + " & ");
+//                System.out.print(String.format("%.3f", (decode_time) / original.length / 1e3) + " & ");
+            recordRatio(String.format("%.3f", ratio) + ",");
+        }
+        System.out.println("\\\\");
+        recordRatio("\n");
+    }
+
+    public static void main_block_size() throws Exception {
+//        int dataLen = Integer.MAX_VALUE;
+        int stdBlockSize = 5000; // 100000
+        int ts2diffBlockSize = 5000; // 12800
+        int rleBlockSize = 10000;  // 288
+
+        int[] blockSizeArray = new int[10];
+        int start = 9;
+        for (int i = start; i < start + 10; i++) {
+            blockSizeArray[i - start] = (int) Math.pow(10, 0.25 * i);
+        }
+        for (int fileIdx = 0; fileIdx < datasetFileList.length; fileIdx++) {
+            recordRatio("block;" + datasetFileNameList[fileIdx] + ";" + Arrays.stream(blockSizeArray).mapToObj(String::valueOf).collect(Collectors.joining(",")) + "\n");
+            dataset(fileIdx);
+
+            for (int value : blockSizeArray) {
+                stdBlockSize = value;
+                ts2diffBlockSize = value;
+                TSFileDescriptor.getInstance().getConfig().setStdBlockSize(stdBlockSize);
+                TSFileDescriptor.getInstance().getConfig().setRleBlockSize(rleBlockSize);
+                TSFileDescriptor.getInstance().getConfig().setTs2diffBlockSize(ts2diffBlockSize);
+                // run encoding methods
+                running();
             }
-//            period = 144;
-            scale = getScale(original);
-//            scale = 1;
-
-            TSFileDescriptor.getInstance().getConfig().setPeriodLength(period);
-            TSFileDescriptor.getInstance().getConfig().setStdBlockSize(stdBlockSize);
-            TSFileDescriptor.getInstance().getConfig().setRleBlockSize(rleBlockSize);
-            TSFileDescriptor.getInstance().getConfig().setTs2diffBlockSize(ts2diffBlockSize);
-
-            double ratio;
-            for (int idx = 0; idx < encodingList.length; idx++) {
-                // choose
-                encodingMethod = encodingList[idx];
-                compressionMethod = CompressionType.UNCOMPRESSED;
-                store();
-//                query();
-                // calculate compression ratio
-                ratio = (double) compressed.length / (double) (original.length * Double.BYTES);
-                System.out.println(encodingNameList[idx] + "\t" + String.format("%.3f", ratio) + "\t" + encode_time / 1e6 + "\t" + decode_time / 1e6);
-//                System.out.print(String.format("%.3f", ratio) + " & ");
-            }
-
-            for (int idx = 0; idx < compressionList.length; idx++) {
-                // choose
-                encodingMethod = TSEncoding.PLAIN;
-                compressionMethod = compressionList[idx];
-                store();
-//                query();
-                // calculate compression ratio
-                ratio = (double) compressed.length / (double) (original.length * Double.BYTES);
-                System.out.println(compressionNameList[idx] + "\t" + String.format("%.3f", ratio) + "\t" + encode_time / 1e6 + "\t" + decode_time / 1e6);
-//                System.out.print(String.format("%.3f", encode_time / 1e6) + " & ");
-            }
-            System.out.println();
-//            }
         }
     }
 
     public static void main(String[] args) throws Exception {
-        comparison();
+        main_block_size();
     }
 }

@@ -390,8 +390,8 @@ public abstract class STD3Encoder extends Encoder {
 //            System.out.println(encodingResidualBufferLength);
         }
 
-        @Override
-        protected void calculateSeasonalComponent() {
+        //        @Override
+        protected void calculateSeasonalComponent1() {
             for (int i = 0; i < period; ++i) {
                 seasonalBuffer[i] = 0;
             }
@@ -427,8 +427,8 @@ public abstract class STD3Encoder extends Encoder {
             }
         }
 
-        //        @Override
-        protected void calculateSeasonalComponent3() {
+        @Override
+        protected void calculateSeasonalComponent() {
             long bestSeasonalComponent = 0, bestCost, curCost;
             for (int phase = 0; phase < period; ++phase) {
                 bestCost = 0x3f3f3f3f;

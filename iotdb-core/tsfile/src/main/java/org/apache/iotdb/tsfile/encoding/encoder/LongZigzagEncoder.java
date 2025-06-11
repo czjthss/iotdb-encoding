@@ -19,6 +19,7 @@
 
 package org.apache.iotdb.tsfile.encoding.encoder;
 
+import org.apache.iotdb.tsfile.common.conf.TSFileDescriptor;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.utils.BytesUtils;
 import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
@@ -115,5 +116,19 @@ public class LongZigzagEncoder extends Encoder {
         }
         // try to caculate max value
         return (long) 8 + values.size() * 4;
+    }
+
+    public static class DoubleZigzagEncoder extends LongZigzagEncoder {
+        private final int scale;
+
+        public DoubleZigzagEncoder() {
+            super();
+            scale = TSFileDescriptor.getInstance().getConfig().getScale();
+        }
+
+        @Override
+        public void encode(double value, ByteArrayOutputStream out) {
+            encode((long) Math.round(value * Math.pow(10, scale)), out);
+        }
     }
 }

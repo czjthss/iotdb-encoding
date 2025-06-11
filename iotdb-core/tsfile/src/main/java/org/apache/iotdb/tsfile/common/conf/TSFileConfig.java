@@ -132,6 +132,10 @@ public class TSFileConfig implements Serializable {
      */
     private int periodLength = 2;
     /**
+     * Scale
+     */
+    private int scale = 2;
+    /**
      * Encoder of time column, TsFile supports TS_2DIFF, PLAIN and RLE(run-length encoding) Default
      * value is TS_2DIFF.
      */
@@ -349,6 +353,14 @@ public class TSFileConfig implements Serializable {
 
     public void setPeriodLength(int periodLength) {
         this.periodLength = periodLength;
+    }
+
+    public int getScale() {
+        return scale;
+    }
+
+    public void setScale(int scale) {
+        this.scale = scale;
     }
 
     public int getStdBlockSize() {

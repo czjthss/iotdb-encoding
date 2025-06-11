@@ -19,6 +19,7 @@
 
 package org.apache.iotdb.tsfile.encoding.encoder;
 
+import org.apache.iotdb.tsfile.common.conf.TSFileDescriptor;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.utils.ReadWriteForEncodingUtils;
 
@@ -36,66 +37,82 @@ import java.util.List;
  * https://gist.github.com/mfuerstenau/ba870a29e16536fdbaba
  */
 public class IntZigzagEncoder extends Encoder {
-  private static final Logger logger = LoggerFactory.getLogger(IntZigzagEncoder.class);
-  private List<Integer> values;
-  byte[] buf = new byte[5];
+    private static final Logger logger = LoggerFactory.getLogger(IntZigzagEncoder.class);
+    private List<Integer> values;
+    byte[] buf = new byte[5];
 
-  public IntZigzagEncoder() {
-    super(TSEncoding.ZIGZAG);
-    this.values = new ArrayList<>();
-    logger.debug("tsfile-encoding IntZigzagEncoder: int zigzag encoder");
-  }
-
-  /** encoding and bit packing. */
-  private byte[] encodeInt(int n) {
-    n = (n << 1) ^ (n >> 31);
-    int idx = 0;
-    if ((n & ~0x7F) != 0) {
-      buf[idx++] = (byte) ((n | 0x80) & 0xFF);
-      n >>>= 7;
-      while (n > 0x7F) {
-        buf[idx++] = (byte) ((n | 0x80) & 0xFF);
-        n >>>= 7;
-      }
+    public IntZigzagEncoder() {
+        super(TSEncoding.ZIGZAG);
+        this.values = new ArrayList<>();
+        logger.debug("tsfile-encoding IntZigzagEncoder: int zigzag encoder");
     }
-    buf[idx++] = (byte) n;
-    return Arrays.copyOfRange(buf, 0, idx);
-  }
 
-  public void encode(int value, ByteArrayOutputStream out) {
-    values.add(value);
-  }
-
-  @Override
-  public void flush(ByteArrayOutputStream out) throws IOException {
-    // byteCache stores all <encoded-data> and we know its size
-    ByteArrayOutputStream byteCache = new ByteArrayOutputStream();
-    final int len = values.size();
-    if (values.size() == 0) {
-      return;
+    /**
+     * encoding and bit packing.
+     */
+    private byte[] encodeInt(int n) {
+        n = (n << 1) ^ (n >> 31);
+        int idx = 0;
+        if ((n & ~0x7F) != 0) {
+            buf[idx++] = (byte) ((n | 0x80) & 0xFF);
+            n >>>= 7;
+            while (n > 0x7F) {
+                buf[idx++] = (byte) ((n | 0x80) & 0xFF);
+                n >>>= 7;
+            }
+        }
+        buf[idx++] = (byte) n;
+        return Arrays.copyOfRange(buf, 0, idx);
     }
-    for (int value : values) {
-      byte[] bytes = encodeInt(value);
-      byteCache.write(bytes, 0, bytes.length);
-    }
-    // store encoded bytes size
-    ReadWriteForEncodingUtils.writeUnsignedVarInt(byteCache.size(), out);
-    // store initial list size
-    ReadWriteForEncodingUtils.writeUnsignedVarInt(len, out);
-    out.write(byteCache.toByteArray());
-    reset();
-  }
 
-  private void reset() {
-    values.clear();
-  }
-
-  @Override
-  public long getMaxByteSize() {
-    if (values == null) {
-      return 0;
+    public void encode(int value, ByteArrayOutputStream out) {
+        values.add(value);
     }
-    // try to caculate max value
-    return (long) 8 + values.size() * 4;
-  }
+
+    @Override
+    public void flush(ByteArrayOutputStream out) throws IOException {
+        // byteCache stores all <encoded-data> and we know its size
+        ByteArrayOutputStream byteCache = new ByteArrayOutputStream();
+        final int len = values.size();
+        if (values.size() == 0) {
+            return;
+        }
+        for (int value : values) {
+            byte[] bytes = encodeInt(value);
+            byteCache.write(bytes, 0, bytes.length);
+        }
+        // store encoded bytes size
+        ReadWriteForEncodingUtils.writeUnsignedVarInt(byteCache.size(), out);
+        // store initial list size
+        ReadWriteForEncodingUtils.writeUnsignedVarInt(len, out);
+        out.write(byteCache.toByteArray());
+        reset();
+    }
+
+    private void reset() {
+        values.clear();
+    }
+
+    @Override
+    public long getMaxByteSize() {
+        if (values == null) {
+            return 0;
+        }
+        // try to caculate max value
+        return (long) 8 + values.size() * 4;
+    }
+
+    public static class FloatZigzagEncoder extends IntZigzagEncoder {
+        private final int scale;
+
+        public FloatZigzagEncoder() {
+            super();
+            scale = TSFileDescriptor.getInstance().getConfig().getScale();
+        }
+
+        @Override
+        public void encode(double value, ByteArrayOutputStream out) {
+            encode((int) Math.round(value * Math.pow(10, scale)), out);
+        }
+    }
 }

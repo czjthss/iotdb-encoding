@@ -14,7 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
 import static org.apache.iotdb.tsfile.encoding.Utils.getPeriod;
-import static org.apache.iotdb.tsfile.encoding.Utils.loadTimeSeriesData;
+import static org.apache.iotdb.tsfile.encoding.Utils.loadTimeSeriesDataFromCsv;
 
 public class Test {
     private static final String INPUT_DIR = "/Users/chenzijie/Documents/GitHub/data/input/compression/";
@@ -36,7 +36,7 @@ public class Test {
 
         int stdBlockSize = 10;
 
-        original = loadTimeSeriesData(INPUT_DIR + "AUDIO.csv", Integer.MAX_VALUE);
+        original = loadTimeSeriesDataFromCsv(INPUT_DIR + "AUDIO.csv", Integer.MAX_VALUE);
 
         TSEncoding encodingMethod = TSEncoding.MyRLE;
 
