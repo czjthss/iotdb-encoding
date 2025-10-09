@@ -25,8 +25,8 @@ import static org.apache.iotdb.tsfile.encoding.Utils.getScale;
 import static org.apache.iotdb.tsfile.encoding.Utils.getPeriod;
 
 public class Exp {
-    private static final String INPUT_DIR = "/Users/chenzijie/Documents/GitHub/data/input/compression/json/";
-    private static final String OUTPUT_DIR = "/Users/chenzijie/Documents/GitHub/data/output/compression/";
+    private static final String INPUT_DIR = "";
+    private static final String OUTPUT_DIR = "";
 
     // need to provide
     private static double[] original;
